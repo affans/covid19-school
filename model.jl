@@ -320,12 +320,17 @@ end
     return cnt
 end
 
-@inline function beta_mask_adjust(inf_mask, sus_mask) 
+@inline function beta_mask_adjust(beta, inf_mask, sus_mask) 
     # https://msphere.asm.org/content/5/5/e00637-20
-    # if inf_mask  
-    #     beta
-    # end
-    error("not implemented")
+    nb = beta
+    if inf_mask && !sus_mask
+        nb = beta * rand(27:42) / 100   # 58 to 73% reduction if infected person wearing mask
+    elseif !inf_mask && sus_mask 
+        nb = beta * rand(63:83) / 100   # 20 - 40% reduction if susceptible person wearing mask
+    elseif inf_mask && sus_mask 
+        nb = beta * rand(24:29) / 100   # if both of them are wearing mask, figure 2E of the refernece
+    end
+    return nb
 end
 
 @inline function beta_vax_adjust() 
@@ -360,6 +365,7 @@ function dyntrans(grps)
 
                 # tranmission dynamics
                 if  y.health == SUS && y.swap == UNDEF
+                    beta = beta_mask_adjust(beta, x.mask, y.mask)
                     if rand() < beta
                         totalinf += 1
                         y.swap = LAT
