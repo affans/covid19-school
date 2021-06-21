@@ -23,5 +23,5 @@ docs/site/
 # environment.
 # Manifest.toml
 
-mynotes.md
-*.afdesign
+.DS_Store
+research/
